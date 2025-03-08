@@ -9,7 +9,9 @@ export interface IUser extends Document {
     email: string;
     password: string;
     salt: string;
-    socketId?: string;
+    socketId?: string,
+    CreatedDate:Date,
+    UpdatedDate:Date,
     generateAuthToken(): string; // Declare the method
   }
 const userSchema=new mongoose.Schema<IUser>({
@@ -43,10 +45,20 @@ const userSchema=new mongoose.Schema<IUser>({
     socketId: {
         type: String,
       },
+      CreatedDate:{
+        type:Date,
+        default:Date.now
+      },
+      UpdatedDate:{
+        type:Date,
+        default:Date.now
+      }
 })
 
 userSchema.methods.generateAuthToken = function () {
-    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET,{
+        expiresIn: "24h",
+    });
     return token;
 }
 export const generateSalt=function (length = 16): string {

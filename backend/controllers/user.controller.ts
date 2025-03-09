@@ -5,13 +5,13 @@ import { validationResult } from "express-validator";
 import asyncHandler from "express-async-handler";
 import { BlacklistTokenModel } from "../db/models/backlistToken.model";
 import expressAsyncHandler from "express-async-handler";
-interface IBlacklistToken {
+export interface IBlacklistToken {
     token: string;
     createdAt: Date;
   }
 // Define the handler with explicit typing
 export const registerUser = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, _next: NextFunction) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.status(400).json({ errors: errors.array() });
@@ -50,7 +50,7 @@ export const registerUser = asyncHandler(
   }
 );
 
-export const loginUser=asyncHandler(async(req:Request,res:Response,next:NextFunction)=>{
+export const loginUser=asyncHandler(async(req:Request,res:Response,_next:NextFunction)=>{
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.status(400).json({ errors: errors.array() });
@@ -77,15 +77,22 @@ export const loginUser=asyncHandler(async(req:Request,res:Response,next:NextFunc
         fullname: user.fullname,
       };
     const token=user.generateAuthToken();
+    res.cookie("token", token, {
+      httpOnly: true, // Prevent client-side JavaScript access
+    //   secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
+      sameSite: "strict", // Mitigate CSRF
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+    });
+  
     res.status(200).json({message:"User logged in successfully",token,user:userResponse})
 })
 
 
-export const getUserProfile=asyncHandler(async(req:Request,res:Response,next:NextFunction)=>{
-    res.status(200).json({message:"User logged in successfully"})
+export const getUserProfile=asyncHandler(async(req:Request,res:Response,_next:NextFunction)=>{
+    res.status(200).json({message:"User logged in successfully",user:req.user})
 })
 export const logoutUser = expressAsyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
       // Ensure the user is authenticated (using authUser middleware)
       // This step should be handled by the route, not the controller
       const token = req.cookies.token || (req.headers.authorization?.split(" ")[1] || "");
@@ -98,9 +105,9 @@ export const logoutUser = expressAsyncHandler(
       try {
         // Clear the token cookie
         res.clearCookie("token", {
-          httpOnly: true, // Ensure the cookie is HTTP-only
-          secure: process.env.NODE_ENV === "production", // Use secure in production
-          sameSite: "strict", // Prevent CSRF
+          // httpOnly: true, // Ensure the cookie is HTTP-only
+          // secure: process.env.NODE_ENV === "production", // Use secure in production
+          // sameSite: "strict", // Prevent CSRF
         });
   
         // Blacklist the token

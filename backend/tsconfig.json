@@ -1,0 +1,52 @@
+{
+    "compilerOptions": {
+      /* Base Options */
+      "target": "ES2022", // Compile to ES2022 (modern JavaScript, supported by Node.js 18+)
+      "module": "NodeNext", // Use ES modules with Node.js (modern module resolution)
+      "moduleResolution": "NodeNext", // Matches module setting for Node.js compatibility
+      "lib": ["ES2022"], // Include ES2022 features (e.g., modern array methods)
+  
+      /* Output Options */
+      "outDir": "./dist", // Output compiled JavaScript to a `dist` folder
+      "rootDir": ".", // Root directory of source files
+      "declaration": true, // Generate `.d.ts` files for type definitions
+      "declarationMap": true, // Generate source maps for `.d.ts` files (useful for debugging)
+  
+      /* Strict Type-Checking */
+      "strict": true, // Enable all strict type-checking options
+      "noImplicitAny": true, // Disallow implicit `any` types
+      "strictNullChecks": true, // Enforce strict null checks
+      "strictFunctionTypes": true, // Enforce strict function type checking
+      "strictBindCallApply": true, // Enforce strict `bind`, `call`, and `apply` checks
+      "noImplicitThis": true, // Disallow `this` with implicit `any`
+      "alwaysStrict": true, // Emit "use strict" in output
+  
+      /* Additional Checks */
+      "noUnusedLocals": true, // Report errors on unused locals
+      "noUnusedParameters": true, // Report errors on unused parameters
+      "noImplicitReturns": true, // Ensure all code paths return a value
+      "noFallthroughCasesInSwitch": true, // Prevent switch case fallthrough
+  
+      /* Interoperability and Compatibility */
+      "esModuleInterop": true, // Enable interoperability between CommonJS and ES Modules
+      "allowSyntheticDefaultImports": true, // Allow default imports from modules with no default export
+      "forceConsistentCasingInFileNames": true, // Enforce consistent file name casing
+      "skipLibCheck": true, // Skip type checking of declaration files (faster compilation)
+  
+      /* Source Maps and Debugging */
+      "sourceMap": true, // Generate source maps for debugging
+      "inlineSources": true, // Include source code in source maps
+  
+      /* Experimental Features */
+      "experimentalDecorators": true, // Enable experimental decorators (useful for some libraries)
+      "emitDecoratorMetadata": true, // Emit metadata for decorators
+  
+      /* Advanced Options */
+      "resolveJsonModule": true, // Allow importing JSON files
+      "isolatedModules": true, // Ensure each file can be safely transpiled without relying on other files
+    },
+    /* Include and Exclude */
+    "include": ["**/*", "types/**/*"], // Include all TypeScript files and custom types
+    "exclude": ["node_modules", "dist"], // Exclude node_modules and compiled output
+    "compileOnSave": true // Automatically compile on save (if supported by your editor)
+  }

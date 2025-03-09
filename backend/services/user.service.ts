@@ -9,7 +9,7 @@ export const createUser = async (userData: {
 }): Promise<IUser> => {
   const { firstname, lastname, email, password, salt } = userData;
 
-  if (!firstname || !email || !password) {
+  if (!firstname || !email || !password || !salt) {
     throw new Error("All required fields (firstname, email, password) are required");
   }
 

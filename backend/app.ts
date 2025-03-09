@@ -5,6 +5,7 @@ import { connectToDB } from "./db/db";
 import cors from "cors";
 import { userRoutes } from "./routes/user.routes";
 import cookieParser from "cookie-parser";
+import { captionRoutes } from "./routes/caption.routes";
 export const app = express();
 
 connectToDB(); // Ensure this function is defined and connects successfully
@@ -17,3 +18,5 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/users", userRoutes);
+
+app.use("/captions",captionRoutes)

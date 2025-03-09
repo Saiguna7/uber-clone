@@ -19,6 +19,11 @@ export const registerUser = asyncHandler(
     }
 
     const { fullname, email, password } = req.body;
+    const isUserAlreadyExists=await UserModel.findOne({email})
+    if(isUserAlreadyExists){
+        res.status(400).json({error:"User Email already exists"})
+        return
+    }
     const salt = generateSalt();
     const hashPass = hashPassword(password, salt);
 
@@ -77,7 +82,7 @@ export const loginUser=asyncHandler(async(req:Request,res:Response,next:NextFunc
 
 
 export const getUserProfile=asyncHandler(async(req:Request,res:Response,next:NextFunction)=>{
-    res.status(200).json({message:"User logged in successfully",user:req.user})
+    res.status(200).json({message:"User logged in successfully"})
 })
 export const logoutUser = expressAsyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {

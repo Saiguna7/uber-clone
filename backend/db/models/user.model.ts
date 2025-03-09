@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import jwt from 'jsonwebtoken'
 import { pbkdf2Sync, randomBytes } from 'crypto'
-export interface IUser extends Document {
+export interface IUser extends mongoose.Document {
     fullname: {
       firstname: string;
       lastname?: string;
@@ -30,6 +30,8 @@ const userSchema=new mongoose.Schema<IUser>({
             type:String,
             required:true,
             unique:true,
+            lowercase:true,
+            match:[/^\S+@\S+\.\S+$/, 'Please enter a valid email']
     },
     password:{
         type:String,
@@ -56,7 +58,7 @@ const userSchema=new mongoose.Schema<IUser>({
 })
 
 userSchema.methods.generateAuthToken = function () {
-    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET,{
+    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET!,{
         expiresIn: "24h",
     });
     return token;

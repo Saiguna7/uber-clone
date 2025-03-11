@@ -1,13 +1,37 @@
-import { useActionState } from 'react'
-import { Link } from 'react-router-dom'
+import { useActionState, useContext } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Loginaction } from '../../actions/login-action'
+import { UserDataContext } from '../context/UserContext'
 
 const UserLogin = () => {
-  const sumbmithandler=async(_:void,formData:FormData)=>{
-const email=formData.get('email') as string
-const password=formData.get('password') as string
-console.log(email,password)
+  const navigate=useNavigate()
+  const context = useContext(UserDataContext);
+
+  if (!context) {
+    throw new Error("UserLogin must be used within a UserDataProvider");
   }
-  const [,action,isPending]=useActionState(sumbmithandler,undefined)
+
+  const { setUser} = context;
+  const sumbmithandler=async(_prevState:{success:boolean; message:string},formData:FormData):Promise<{success:boolean; message:string}>=>{
+    try {
+      const result = await Loginaction(formData);
+      if (result.success) {
+        setUser(result.data)
+        localStorage.setItem("token", result.data.token);
+        navigate('/home')
+        return { success: true, message: "Login successful" };
+      } else {
+        return { success: false, message: result.message || "Login failed" };
+      }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      return { success: false, message: "An error occurred during login" };
+    }
+  };
+  const [state,action,isPending]=useActionState(sumbmithandler,{
+    success: false,
+    message: "",
+  })
   return (
     <div className='p-7 h-screen flex-col flex justify-between'>
       <div>
@@ -23,6 +47,19 @@ console.log(email,password)
         <input disabled={isPending} className='bg-[#eeeeee] mb-7 rounded  px-4 py-2 border w-full text-lg placeholder:text-md' type="password" placeholder="Enter your password" required name='password'/>
         <button disabled={isPending} className='bg-[#111] mb-3 text-white font-semibold rounded  px-4 py-2 border w-full text-lg ' type="submit">{isPending?'Login...':'Login'}</button>
       </form>
+      {/* Error message display */}
+      {state.message && !state.success && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-2 mb-4">
+              <p>{state.message}</p>
+            </div>
+          )}
+          
+          {/* Success message display */}
+          {state.message && state.success && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mt-2 mb-4">
+              <p>{state.message}</p>
+            </div>
+          )}
 <p className='text-center text-sm '>New here? <Link to="/signup" className='text-blue-600'>Create new Account</Link></p>
       </div>
       <div>

@@ -1,11 +1,52 @@
-import { useActionState } from "react";
-import { Loginaction } from "../../actions/login-action";
-import { Link } from "react-router-dom";
+import { useActionState, useContext } from "react";
+import { SignUpCatain } from "../../actions/captain-signup-action";
+import { Link, useNavigate } from "react-router-dom";
+import { CaptainDataContext } from "../context/CaptionContext";
+import { AxiosError } from "axios";
 
 const CaptainSignup = () => {
-  const sumbmithandler = async (_prevState: unknown, formData: FormData) => {
-    const result = await Loginaction(formData); // Call server action
-    return result || { success: false, message: "Login failed" }; // Return state
+  const navigate=useNavigate()
+  const context = useContext(CaptainDataContext);
+  if (!context) {
+    throw new Error("CaptainSignup must be used within a CaptainContext");
+  }
+  const { setCaptain } = context;
+  const sumbmithandler = async (
+    _prevState: { success: boolean; message: string },
+    formData: FormData
+  ): Promise<{ success: boolean; message: string }> => {
+    try {
+    const result = await SignUpCatain(formData);
+    if (result.success && result.data) {
+      setCaptain(result.data);
+      localStorage.setItem("token", result.data.token); // Store captain data in context
+      navigate("/captain-home"); // Adjust redirect as needed
+      return { success: true, message: "Signup successful" };
+    }else {
+    return { success: false, message: result.message || "Signup failed" };
+  }
+  }
+    catch (error) {
+      // Handle server errors or network issues
+      if (error instanceof AxiosError) {
+        if (error.response && error.response.data) {
+          const errorMessage = error.response.data.error || 
+                              (error.response.data.errors && error.response.data.errors[0]?.msg) ||
+                              "An error occurred during signup";
+          return { success: false, message: errorMessage };
+        } else if (error.request) {
+          return { success: false, message: "No response from server. Please check your internet connection." };
+        } else {
+          return { success: false, message: error.message || "An unexpected error occurred" };
+        }
+      } else if (error instanceof Error) {
+        // Handle standard JavaScript errors
+        return { success: false, message: error.message || "An unexpected error occurred" };
+      } else {
+        // Fallback for completely unknown errors
+        return { success: false, message: "An unexpected error occurred" };
+      }
+    }
   };
       const [state, action, isPending] = useActionState(sumbmithandler, {
         success: false,
@@ -29,14 +70,63 @@ const CaptainSignup = () => {
             <input disabled={isPending} type="email" placeholder="Enter your email" required name='email' className='bg-[#eeeeee] mb-5 rounded  px-4 py-2 border w-full text-lg placeholder:text-md'/>
             <h3 className='text-lg font-medium mb-2'>Enter Password</h3>
             <input disabled={isPending} className='bg-[#eeeeee] mb-5 rounded  px-4 py-2 border w-full text-lg placeholder:text-md' type="password" placeholder="Enter your password" required name='password'/>
-            <button disabled={isPending} className='bg-[#111] mb-3 text-white font-semibold rounded  px-4 py-2 border w-full text-lg ' type="submit">{isPending?'Signup...':'Signup'}</button>
+            <h3 className='text-lg font-medium mb-2'>Vechicle Information</h3>
+            <div className="flex gap-4 mb-4">
+              <div className="flex flex-col w-full">
+            <h3 className='text-lg font-medium mb-2'>Vechicle Color</h3>
+            <input disabled={isPending} type="text" placeholder="Vehicle Color" required name='vehicleColor' className='bg-[#eeeeee] mb-5 rounded  px-4 py-2 border w-full text-lg placeholder:text-md'/>
+              </div>
+            <div className="flex-col flex w-full">
+            <h3 className='text-lg font-medium mb-2'>Vechicle Plate</h3>
+            <input disabled={isPending} type="text" placeholder="Vehicle Plate" required name='vehiclePlate' className='bg-[#eeeeee] mb-5 rounded  px-4 py-2 border w-full text-lg placeholder:text-md'/>
+            </div>
+            </div>
+            <div className="flex gap-4 mb-4">
+              <div className="flex-col flex w-full">
+            <h3 className='text-lg font-medium mb-2'>Vechicle Capacity</h3>
+            <input disabled={isPending} type="number"  min="1"
+                max="9"
+                step="1"
+                onInput={(e) => {
+                  const input = e.target as HTMLInputElement;
+                  if (input.value.length > 1) input.value = input.value.slice(0, 1); // Limit to 1 digit
+                }}
+                placeholder="Vehicle Capacity" required name='vehicleCapacity' className='bg-[#eeeeee] mb-5 rounded  px-4 py-2 border w-full text-lg placeholder:text-md'/>
+              </div>
+              <div className="flex-col flex w-full">
+
+            <h3 className='text-lg font-medium mb-2'>Vechicle Plate</h3>
+
+            <select  disabled={isPending} name="vehicleType" defaultValue=""   required  className='bg-[#eeeeee] mb-5 rounded  px-4 py-2 border w-full text-lg placeholder:text-md'>
+            <option value="" disabled>
+                  Select vehicle type
+                </option>
+                <option value="car">Car</option>
+                <option value="auto">Auto</option>
+                <option value="motorcycle">Motorcycle</option>
+            </select>
+              </div>
+            </div>
+            <button disabled={isPending}  className='bg-[#111] mb-3 text-white font-semibold rounded  px-4 py-2 border w-full text-lg ' type="submit">{isPending?'Signup...':'Signup'}</button>
           </form>
+          {/* Error message display */}
+          {state.message && !state.success && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-2 mb-4">
+              <p>{state.message}</p>
+            </div>
+          )}
+          
+          {/* Success message display */}
+          {state.message && state.success && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mt-2 mb-4">
+              <p>{state.message}</p>
+            </div>
+          )}
     <p className='text-center text-sm '>Already have a acoount? <Link to="/captain-login" className='text-blue-600'>Login in here</Link></p>
           </div>
           <div>
           <p className="text-[10px] leading-tight">This site is protected by reCAPTCHA and the <span className="underline">Google Privacy Policy</span> and <span className="underline">Terms of Service apply</span>.</p>
           </div>
-          {state.message && <p>{state.message}</p>}
         </div>
       )
 }

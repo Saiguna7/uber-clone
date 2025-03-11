@@ -46,6 +46,12 @@ export const registerUser = asyncHandler(
     }
 
     const token = user.generateAuthToken();
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
     res.status(201).json({ message: "User created successfully", token });
   }
 );
@@ -78,10 +84,10 @@ export const loginUser=asyncHandler(async(req:Request,res:Response,_next:NextFun
       };
     const token=user.generateAuthToken();
     res.cookie("token", token, {
-      httpOnly: true, // Prevent client-side JavaScript access
-    //   secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
-      sameSite: "strict", // Mitigate CSRF
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
   
     res.status(200).json({message:"User logged in successfully",token,user:userResponse})
@@ -104,14 +110,18 @@ export const logoutUser = expressAsyncHandler(
   
       try {
         // Clear the token cookie
-        res.clearCookie("token", {
-          // httpOnly: true, // Ensure the cookie is HTTP-only
-          // secure: process.env.NODE_ENV === "production", // Use secure in production
-          // sameSite: "strict", // Prevent CSRF
+        res.cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: 24 * 60 * 60 * 1000, // 24 hours
         });
+      
   
         // Blacklist the token
-        await BlacklistTokenModel.create({ token, createdAt: new Date() } as IBlacklistToken);
+      await BlacklistTokenModel.create({
+  token,
+});
   
         res.status(200).json({ message: "User logged out successfully" });
       } catch (error) {

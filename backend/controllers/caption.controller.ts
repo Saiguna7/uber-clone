@@ -44,7 +44,13 @@ export const registerCaptain = expressAsyncHandler(async (req: Request, res: Res
       }
   
     const token=captain.generateAuthToken()
-    res.status(201).json({message:"captain created successfully",token})
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+    res.status(201).json({ message: "Captain created successfully" });
 })
 
 export const loginCaption = expressAsyncHandler(async (req: Request, res: Response, next: NextFunction) => {
@@ -79,10 +85,10 @@ export const loginCaption = expressAsyncHandler(async (req: Request, res: Respon
   
     // Set the token cookie
     res.cookie("token", token, {
-      httpOnly: true, // Prevent client-side JavaScript access
-    //   secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
-      sameSite: "strict", // Mitigate CSRF
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
   
     res.status(200).json({ message: "User logged in successfully", token, user: userResponse });
@@ -103,16 +109,15 @@ export const logoutCaption=expressAsyncHandler(async(req:Request,res:Response,_n
         return; // Exit early, handled by expressAsyncHandler
     }
     try {
-        // Clear the token cookie
-        res.clearCookie("token");
-        // res.clearCookie("token", {
-        //   httpOnly: true, // Ensure the cookie is HTTP-only
-        //   secure: process.env.NODE_ENV === "production", // Use secure in production
-        //   sameSite: "strict", // Prevent CSRF
-        // });
-  
+      res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
         // Blacklist the token
-        await BlacklistTokenModel.create({ token, createdAt: new Date() } as IBlacklistToken);
+        await BlacklistTokenModel.create({
+          token, // Match token expiration
+        });
   
         res.status(200).json({ message: "User logged out successfully" });
       } catch (error) {

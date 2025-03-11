@@ -1,16 +1,29 @@
-import { createContext } from "react"
+// UserContext.tsx
+import { createContext, useState, ReactNode } from "react";
 
-export const UserDataContext = createContext()
-
-const UserContext = ({children}: {children: React.ReactNode}) => {
-const user='Sarthal'
-  return (
-    <div>
-      <UserDataContext.Provider value={user}>
-      {children}
-      </UserDataContext.Provider>
-    </div>
-  )
+interface User {
+  email: string;
+  fullname: {
+    firstname: string;
+    lastname: string;
+  };
 }
 
-export default UserContext
+interface UserDataContextType {
+  user: User | null;
+  setUser: (user: User | null) => void;
+}
+
+// Define the context with a default value
+// eslint-disable-next-line react-refresh/only-export-components
+export const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
+
+export const UserDataProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+
+  return (
+    <UserDataContext.Provider value={{ user, setUser }}>
+      {children}
+    </UserDataContext.Provider>
+  );
+};

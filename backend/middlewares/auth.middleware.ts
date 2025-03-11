@@ -5,69 +5,70 @@ import expressAsyncHandler from "express-async-handler"; // Correct import
 import { BlacklistTokenModel } from "../db/models/backlistToken.model";
 import { captainModel } from "../db/models/caption.model";
 
-export const authUser = expressAsyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
-    // Extract token from cookies or Authorization header
-    const token = req.cookies.token || req.headers.authorization?.split(" ")[1] ;
-
-    if (!token) {
-      res.status(401).json({ error: "Unauthorized" });
-      return; // Exit early, handled by expressAsyncHandler
-    }
-const blacklistedToken=await BlacklistTokenModel.findOne({token})
-if(blacklistedToken){
-    res.status(401).json({ error: "Unauthorized" });
-    return; // Exit early, handled by expressAsyncHandler
-}
-    try {
-      // Verify JWT token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { _id: string };
-      const user = await UserModel.findById(decoded._id);
-
-      if (!user) {
-        res.status(401).json({ error: "Unauthorized" });
-        return; // Exit early, handled by expressAsyncHandler
-      }
-
-      // Attach user to request object
-      req.user = user; // Assuming req.user is typed or you need to extend the Request type
-     return next(); // Pass control to the next middleware
-    } catch (error) {
-      res.status(401).json({ error: "Unauthorized" });
-      return; // Exit early, handled by expressAsyncHandler
-    }
+export const authUser = expressAsyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const token = req.cookies.token;
+  if (!token) {
+    res.status(401).json({ error: "No token provided" });
+    return;
   }
-);
+
+  // Check if token is blacklisted
+  const blacklisted = await BlacklistTokenModel.findOne({ token });
+  if (blacklisted) {
+    res.status(401).json({ error: "Token has been invalidated" });
+    return;
+  }
+
+  // Verify token (assuming JWT)
+  try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is not defined");
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (typeof decoded === 'string') {
+      throw new Error("Invalid token payload");
+    }
+    const user = await UserModel.findById(decoded._id);
+    if (!user) {
+      res.status(401).json({ error: "User not found" });
+      return;
+    }
+    req.user = user;
+    next();
+  } catch (error) {
+    res.status(401).json({ error: "Invalid token" });
+    return;
+  }
+});
 
 export const authCaption = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    console.log("Headers:", req.headers);
-    console.log("Cookies:", req.cookies);
-    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
-
-    if (!token) {
-      console.log("No token provided");
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
+    const token = req.cookies.token;
+  if (!token) {
+    res.status(401).json({ error: "No token provided" });
+    return;
+  }
 
     const blacklistedToken = await BlacklistTokenModel.findOne({ token });
     if (blacklistedToken) {
-      console.log("Token is blacklisted:", token);
-      res.status(401).json({ error: "Unauthorized" });
+      res.status(401).json({ error: "Token has been invalidated" });
       return;
     }
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { _id: string };
+      if (!process.env.JWT_SECRET) {
+        throw new Error("JWT_SECRET is not defined");
+      }
+      const decoded = jwt.verify(token, process.env.JWT_SECRET) 
       console.log("Decoded token:", decoded);
+      if (typeof decoded === 'string') {
+        throw new Error("Invalid token payload");
+      }
       const caption = await captainModel.findById(decoded._id);
       if (!caption) {
-        console.log("Captain not found for _id:", decoded._id);
         res.status(401).json({ error: "Unauthorized" });
         return;
       }
-      console.log("Authenticated captain:", caption);
       req.user = caption;
       return next();
     } catch (error) {

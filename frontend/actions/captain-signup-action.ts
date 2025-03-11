@@ -7,7 +7,6 @@ interface ServerUserResponse {
 }
 
 interface Captain {
-  token: string;
   email: string;
   fullname: {
     firstname: string;
@@ -80,7 +79,7 @@ export const SignUpCatain = async (formData: FormData): Promise<SignupResponse> 
           plate: vehiclePlate,
           capacity: vehicleCapacity, // Now a number
         },
-      }
+      },{withCredentials:true}
     );
 
     console.log("Full server response:", response.data);
@@ -97,7 +96,6 @@ export const SignUpCatain = async (formData: FormData): Promise<SignupResponse> 
           plate: vehiclePlate,
           capacity: vehicleCapacity,
         },
-        token: response.data.token,
       };
       console.log("Captain registered successfully:", captain);
       return {

@@ -5,7 +5,6 @@ interface ServerUserResponse {
 }
 
 interface User {
-  token: string;
   email: string;
   fullname: {
     firstname: string;
@@ -45,7 +44,7 @@ export const Signupaction = async (formData: FormData):Promise<SignupResponse> =
         email, 
         password, 
         fullname: { firstname, lastname } 
-      }
+      },{ withCredentials: true }
     );
     console.log("Full server response:", response.data);
     if (response.status === 201) {
@@ -55,7 +54,6 @@ export const Signupaction = async (formData: FormData):Promise<SignupResponse> =
           firstname,
           lastname,
         },
-        token: response.data.token,
       };
       console.log("User registered successfully:", user);
       return {

@@ -19,7 +19,6 @@ const UserSignup = () => {
         console.log("Success is true, result.data:", result.data); // Add this line
         if (result.data) {
           setUser(result.data);
-          localStorage.setItem("token", result.data.token);
         }
         console.log("Navigating to /home"); // Add this
         navigate('/home');

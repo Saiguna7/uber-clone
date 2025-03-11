@@ -12,7 +12,7 @@ export async function Loginaction(formData: FormData) {
   }
 
   try {
-    const response = await axios.post(import.meta.env.VITE_BASE_URL + "/users/login", { email, password });
+    const response = await axios.post(import.meta.env.VITE_BASE_URL + "/users/login", { email, password },{ withCredentials: true });
     // Adjust status check based on your API (200 is typical for login success, not 201)
     if (response.status === 200) {
       const data=response.data

@@ -4,7 +4,6 @@ import { UserDataContext } from "../context/UserContext"
 import axios from "axios"
 
 const UserProtectWrapper = ({children}:{children:React.ReactNode}) => {
-   const token=localStorage.getItem('token')
     const navigate=useNavigate()
     const context=useContext(UserDataContext)
     if(!context){
@@ -13,33 +12,23 @@ const UserProtectWrapper = ({children}:{children:React.ReactNode}) => {
     const [isloading,setloading]=useState(true)
     const {setUser}=context
     useEffect(() => {
-        if (!token) {
-          navigate("/login");
-          return;
-        }
         axios.get(`${import.meta.env.VITE_BASE_URL}/users/profile`,{
-            headers:{
-                Authorization:`Bearer ${token}`
-            }
+withCredentials:true
         }).then((res)=>{
             if(res.status===200){
-                setUser(res.data)
+                setUser(res.data.user)
                 setloading(false)
             }
         }).catch((err)=>{
             console.log(err)
-            localStorage.removeItem('token')
             navigate("/login")
         })
-      }, [token, navigate,setUser]); // Re-run if token or navigate changes
+      }, [navigate,setUser]); // Re-run if token or navigate changes
      if(isloading){
       return <>
       Loading..
       </>
      }
-      if (!token) {
-        return null; // Prevent rendering children while redirecting
-      }
   return (
     <>
       {children}

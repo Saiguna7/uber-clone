@@ -5,7 +5,6 @@ import { validationResult } from "express-validator";
 import { generateSalt, hashPassword } from "../db/models/user.model";
 import { createCaption } from "../services/caption.service";
 import { BlacklistTokenModel } from "../db/models/backlistToken.model";
-import { IBlacklistToken } from "./user.controller";
 export const registerCaptain = expressAsyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -113,6 +112,7 @@ export const logoutCaption=expressAsyncHandler(async(req:Request,res:Response,_n
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
+        path: "/", 
       });
         // Blacklist the token
         await BlacklistTokenModel.create({

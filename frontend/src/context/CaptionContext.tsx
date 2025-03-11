@@ -1,4 +1,3 @@
-// context/CaptainContext.tsx
 import { createContext, useState, ReactNode } from "react";
 
 interface Captain {

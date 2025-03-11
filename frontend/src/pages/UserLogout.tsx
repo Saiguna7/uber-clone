@@ -1,44 +1,47 @@
-import axios from "axios"
-import { useNavigate } from "react-router-dom"
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+
 const UserLogout = () => {
-    const navigate = useNavigate();
-  
-    const handleLogout = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/login"); // Redirect if no token
-        return;
-      }
-  
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/users/logout`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        if (response.status === 201) { // Note: 200 is more common for logout success
-          localStorage.removeItem("token");
-          navigate("/login");
+  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/users/logout`,
+        {},
+        {
+          withCredentials: true, // Send the httpOnly cookie
         }
-      } catch (error) {
-        console.error("Logout failed:", error);
-        // Optionally handle error (e.g., show a message)
-        localStorage.removeItem("token"); // Clear token anyway for safety
+      );
+
+      if (response.status === 200) {
         navigate("/login");
       }
-    };
-  
-    return (
-      <div>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded"
-        >
-          Logout
-        </button>
-      </div>
-    );
+    } catch (error) {
+      console.error("Logout failed:", error);
+      setError("Failed to log out. Please try again.");
+      // Redirect anyway since server might have cleared the cookie
+      navigate("/login");
+    }
   };
-  
-  export default UserLogout;
+
+  return (
+    <div>
+      <button
+        onClick={handleLogout}
+        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+      >
+        Logout
+      </button>
+      {error && (
+        <div className="mt-2 text-red-700 bg-red-100 border border-red-400 px-4 py-2 rounded">
+          {error}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default UserLogout;

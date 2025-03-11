@@ -52,7 +52,7 @@ export const registerUser = asyncHandler(
       sameSite: "strict",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
-    res.status(201).json({ message: "User created successfully", token });
+    res.status(201).json({ message: "User created successfully"});
   }
 );
 
@@ -90,7 +90,7 @@ export const loginUser=asyncHandler(async(req:Request,res:Response,_next:NextFun
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
   
-    res.status(200).json({message:"User logged in successfully",token,user:userResponse})
+    res.status(200).json({ message: "User logged in successfully", user: userResponse });
 })
 
 
@@ -110,18 +110,17 @@ export const logoutUser = expressAsyncHandler(
   
       try {
         // Clear the token cookie
-        res.cookie("token", token, {
+        await BlacklistTokenModel.create({
+    token,
+  });
+        res.clearCookie("token", {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           sameSite: "strict",
-          maxAge: 24 * 60 * 60 * 1000, // 24 hours
+          path: "/", // Explicitly match the default path
         });
-      
   
         // Blacklist the token
-      await BlacklistTokenModel.create({
-  token,
-});
   
         res.status(200).json({ message: "User logged out successfully" });
       } catch (error) {

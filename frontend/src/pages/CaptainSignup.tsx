@@ -19,7 +19,6 @@ const CaptainSignup = () => {
     const result = await SignUpCatain(formData);
     if (result.success && result.data) {
       setCaptain(result.data);
-      localStorage.setItem("token", result.data.token); // Store captain data in context
       navigate("/captain-home"); // Adjust redirect as needed
       return { success: true, message: "Signup successful" };
     }else {
